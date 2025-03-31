@@ -1,6 +1,6 @@
-from django.urls import path
+from django.urls import re_path
 from . import consumers
 
 websocket_urlpatterns = [
-    path('ws/radio/', consumers.RadioConsumer.as_asgi()),
+    re_path(r'^ws/radio/$', consumers.RadioConsumer.as_asgi()),
 ]

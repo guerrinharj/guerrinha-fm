@@ -1,5 +1,5 @@
 #!/bin/zsh
 
-chmod +x ./devops/server.sh
+chmod +x ./devops/activate.sh
 
 source .venv/bin/activate
