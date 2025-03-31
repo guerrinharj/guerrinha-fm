@@ -4,7 +4,7 @@ from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from tracks.routing import websocket_urlpatterns
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guerrinha_radio_api.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guerrinha_radio.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
