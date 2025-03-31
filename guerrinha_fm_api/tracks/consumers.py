@@ -1,4 +1,9 @@
 import json
+import asyncio
+import requests
+from io import BytesIO
+from mutagen.mp3 import MP3
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 from tracks.models import Track
 from asgiref.sync import sync_to_async
@@ -11,28 +16,35 @@ class RadioConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         try:
-            track = await self.get_now_playing()
-            print("🎵 Got track:", track)
+            while True:
+                track = await self.get_now_playing()
+                print("🎵 Got track:", track)
 
-            if track:
-                response = {
-                    "track": {
-                        "name": track.name,
-                        "album": track.album,
-                        "year": track.year,
-                        "url": track.song_url,
-                        "album_url": track.album_url,
-                        "cover_url": track.cover_url,
-                        "start_time": now().isoformat()
+                if track:
+                    response = {
+                        "track": {
+                            "name": track.name,
+                            "album": track.album,
+                            "year": track.year,
+                            "url": track.song_url,
+                            "album_url": track.album_url,
+                            "cover_url": track.cover_url,
+                            "start_time": now().isoformat()
+                        }
                     }
-                }
-                print("📤 Sending:", response)
-                await self.send(text_data=json.dumps(response))
-            else:
-                print("⚠️ No track found.")
+                    print("📤 Sending:", response)
+                    await self.send(text_data=json.dumps(response))
+
+                    # Get MP3 duration from URL
+                    duration = await self.get_mp3_duration(track.song_url)
+                    print(f"⏳ Waiting {duration} seconds until next track...")
+                    await asyncio.sleep(duration)
+                else:
+                    print("⚠️ No track found.")
+                    await asyncio.sleep(5)
         except Exception as e:
             print("❌ Exception during connect():", repr(e))
-            await self.close(code=1011)  # 1011 = internal error
+            await self.close(code=1000)  # WebSocket close code (1000 = normal)
 
     async def disconnect(self, close_code):
         print(f"📴 Disconnected with code: {close_code}")
@@ -40,5 +52,21 @@ class RadioConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_now_playing(self):
-        print("🔍 Fetching now playing...")
-        return Track.objects.first()
+        print("🔍 Picking a random track...")
+        return Track.objects.order_by("?").first()
+
+    @sync_to_async
+    def get_mp3_duration(self, url):
+        try:
+            print("📡 Fetching MP3 from:", url)
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+
+            chunk = response.raw.read(1024 * 500)  # Read first ~500KB
+            audio = MP3(BytesIO(chunk))
+            duration = int(audio.info.length)
+            print(f"🎚️ MP3 duration: {duration}s")
+            return duration
+        except Exception as e:
+            print("⚠️ Failed to get duration, defaulting to 10s:", e)
+            return 10  # Fallback
