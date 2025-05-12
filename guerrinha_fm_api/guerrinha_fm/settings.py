@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-&(46@fsc-8%t=fx=8&@s2n8d552z5mybo(7*(_q8&vyfm#0#ok
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "guerrinha-fm.onrender.com",
+]
+
 
 ASGI_APPLICATION = 'guerrinha_fm_api.asgi.application'
 
