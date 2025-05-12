@@ -8,3 +8,4 @@ class Track(models.Model):
     song_url = models.URLField()
     album_url = models.URLField()
     cover_url = models.URLField()
+    duration = models.IntegerField(null=True, blank=True)

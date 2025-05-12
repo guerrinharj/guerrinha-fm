@@ -27,6 +27,7 @@ class RadioConsumer(AsyncWebsocketConsumer):
                             "album": track.album,
                             "year": track.year,
                             "url": track.song_url,
+                            "duration": track.duration,
                             "album_url": track.album_url,
                             "cover_url": track.cover_url,
                             "start_time": now().isoformat()
