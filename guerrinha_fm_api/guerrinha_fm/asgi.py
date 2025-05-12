@@ -5,13 +5,10 @@ from channels.auth import AuthMiddlewareStack
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "guerrinha_fm.settings")
 
-# Create the basic application
 django_asgi_app = get_asgi_application()
 
-# Delay the import until AFTER apps are loaded
 def get_application():
-    from tracks.routing import websocket_urlpatterns
-
+    from tracks.routing import websocket_urlpatterns  # ✅ lazy import
     return ProtocolTypeRouter({
         "http": django_asgi_app,
         "websocket": AuthMiddlewareStack(
