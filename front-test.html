@@ -58,18 +58,28 @@
         const player = document.getElementById("player");
         const playBtn = document.getElementById("play");
         const stopBtn = document.getElementById("stop");
-
+    
         let playlistQueue = [];
         let isPlaying = false;
-
+    
+        // 🟢 SET YOUR STARTING TRACK HERE
+        const startingTrack = {
+            name: "starting song",
+            url: "http://localhost:8000/static/audio/current.mp3" // ← replace with your actual live stream
+        };
+    
+        // enqueue it on load
+        playlistQueue.push(startingTrack);
+        playNextTrack(); // play right away
+    
         socket.onopen = () => {
             output.innerText = "";
         };
-
+    
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             const incomingTrack = data.track;
-
+    
             if (incomingTrack?.url) {
                 playlistQueue.push(incomingTrack);
                 if (!isPlaying) {
@@ -77,23 +87,23 @@
                 }
             }
         };
-
+    
         function playNextTrack() {
             if (playlistQueue.length === 0) {
                 isPlaying = false;
                 trackName.innerText = "waiting for data...";
                 return;
             }
-
+    
             const nextTrack = playlistQueue.shift();
             const liveUrl = nextTrack.url + "?t=" + Date.now();
-
+    
             trackName.innerText = nextTrack.name || "unknown track";
-
+    
             player.src = liveUrl;
             player.load();
             player.muted = false;
-
+    
             player.play().then(() => {
                 isPlaying = true;
             }).catch((err) => {
@@ -101,28 +111,29 @@
                 isPlaying = false;
             });
         }
-
-        // when the current track ends, play the next one
+    
         player.addEventListener("ended", () => {
             isPlaying = false;
             playNextTrack();
         });
-
+    
         playBtn.addEventListener("click", () => {
             player.muted = false;
         });
-
+    
         stopBtn.addEventListener("click", () => {
             player.muted = true;
         });
-
+    
         socket.onerror = (error) => {
             console.error("WebSocket error:", error);
         };
-
+    
         socket.onclose = () => {
             output.innerText = "disconnected.";
         };
     </script>
+    
+    
 </body>
 </html>
