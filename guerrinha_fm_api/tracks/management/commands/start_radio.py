@@ -1,6 +1,8 @@
 import asyncio
 import json
 import requests
+import redis
+
 from io import BytesIO
 from mutagen.mp3 import MP3
 
@@ -12,6 +14,8 @@ from django.utils.timezone import now
 
 class Command(BaseCommand):
     help = "Start the radio broadcast loop"
+    
+    now_playing = None
 
     def handle(self, *args, **options):
         async_to_sync(self.broadcast_loop)()
@@ -39,6 +43,11 @@ class Command(BaseCommand):
                     "start_time": now().isoformat()
                 }
             }
+
+            r = redis.Redis()
+            r.set("now_playing", json.dumps(response))
+
+            Command.now_playing = response
 
             print("📡 Broadcasting track:", response)
 
