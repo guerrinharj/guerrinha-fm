@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Radio WebSocket Test</title>
+</head>
+<body>
+    <h1>🎧 Guerrinha FM</h1>
+    <pre id="output">Connecting...</pre>
+
+    <h3>now playing:</h3>
+    <span id="data"> </span>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws/radio/");
+
+        socket.onopen = () => {
+            document.getElementById("output").innerText = "Connected!";
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            document.getElementById("data").innerText = JSON.stringify(data, null, 2);
+        };
+
+        socket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
+
+        socket.onclose = () => {
+            document.getElementById("output").innerText = "Disconnected.";
+        };
+    </script>
+</body>
+</html>
