@@ -62,7 +62,7 @@
 
     <script>
         // 🎵 RADIO SOCKET
-        const radioSocket = new WebSocket("ws://localhost:8000/ws/radio/");
+        const radioSocket = new WebSocket("wss://guerrinha-fm.onrender.com/ws/radio/");
         const output = document.getElementById("output");
         const trackName = document.getElementById("track-name");
         const player = document.getElementById("player");
@@ -73,8 +73,8 @@
         let isPlaying = false;
 
         const startingTrack = {
-            name: "starting song",
-            url: "http://localhost:8000/static/audio/current.mp3"
+            name: "...",
+            url: "https://guerrinha-fm.onrender.com/static/audio/current.mp3"
         };
 
         playlistQueue.push(startingTrack);
@@ -142,7 +142,7 @@
         };
 
         // 💬 CHAT SOCKET
-        const chatSocket = new WebSocket("ws://localhost:8000/ws/chat/");
+        const chatSocket = new WebSocket("wss://guerrinha-fm.onrender.com/ws/chat/");
         const chatBox = document.getElementById("chat-box");
 
         chatSocket.onmessage = (event) => {
