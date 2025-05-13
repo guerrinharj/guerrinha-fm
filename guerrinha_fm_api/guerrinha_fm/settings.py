@@ -44,12 +44,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [{
-                "host": "assured-mantis-34640.upstash.io",
-                "port": 6379,
-                "password": "AYdQAAIjcDFmNDdhNmM0YzFmOTc0NzBlOTJhY2Y2MTkwMzBhZTYyN3AxMA",
-                "ssl": True,
-            }],
+            "hosts": [redis_url], 
         },
     },
 }
