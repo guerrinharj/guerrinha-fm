@@ -33,15 +33,21 @@ ALLOWED_HOSTS = [
 ASGI_APPLICATION = 'guerrinha_fm.asgi.application'
 
 
+import os
+import urllib.parse
+
+# Redis connection: supports REDIS_URL on Render, falls back to localhost
+redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+parsed_url = urllib.parse.urlparse(redis_url)
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [(parsed_url.hostname, parsed_url.port)],
         },
     },
 }
-
 
 
 # Application definition
