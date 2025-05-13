@@ -51,35 +51,43 @@
 
     <audio id="player" autoplay muted></audio>
 
+    <hr>
+
+    <h3>chat</h3>
+    <div id="chat-box" style="max-height: 200px; overflow-y: auto; border: 1px solid white; padding: 1em; margin: 1em auto; width: 80%; text-align: left;"></div>
+
+    <input id="username" placeholder="your name" style="padding: 0.5em; width: 20%;" />
+    <input id="message" placeholder="your message" style="padding: 0.5em; width: 50%;" />
+    <button onclick="sendMessage()">send</button>
+
     <script>
-        const socket = new WebSocket("ws://localhost:8000/ws/radio/");
+        // 🎵 RADIO SOCKET
+        const radioSocket = new WebSocket("ws://localhost:8000/ws/radio/");
         const output = document.getElementById("output");
         const trackName = document.getElementById("track-name");
         const player = document.getElementById("player");
         const playBtn = document.getElementById("play");
         const stopBtn = document.getElementById("stop");
-    
+
         let playlistQueue = [];
         let isPlaying = false;
-    
-        // 🟢 SET YOUR STARTING TRACK HERE
+
         const startingTrack = {
             name: "starting song",
-            url: "http://localhost:8000/static/audio/current.mp3" // ← replace with your actual live stream
+            url: "http://localhost:8000/static/audio/current.mp3"
         };
-    
-        // enqueue it on load
+
         playlistQueue.push(startingTrack);
-        playNextTrack(); // play right away
-    
-        socket.onopen = () => {
+        playNextTrack();
+
+        radioSocket.onopen = () => {
             output.innerText = "";
         };
-    
-        socket.onmessage = (event) => {
+
+        radioSocket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             const incomingTrack = data.track;
-    
+
             if (incomingTrack?.url) {
                 playlistQueue.push(incomingTrack);
                 if (!isPlaying) {
@@ -87,23 +95,23 @@
                 }
             }
         };
-    
+
         function playNextTrack() {
             if (playlistQueue.length === 0) {
                 isPlaying = false;
                 trackName.innerText = "waiting for data...";
                 return;
             }
-    
+
             const nextTrack = playlistQueue.shift();
             const liveUrl = nextTrack.url + "?t=" + Date.now();
-    
+
             trackName.innerText = nextTrack.name || "unknown track";
-    
+
             player.src = liveUrl;
             player.load();
             player.muted = false;
-    
+
             player.play().then(() => {
                 isPlaying = true;
             }).catch((err) => {
@@ -111,29 +119,51 @@
                 isPlaying = false;
             });
         }
-    
+
         player.addEventListener("ended", () => {
             isPlaying = false;
             playNextTrack();
         });
-    
+
         playBtn.addEventListener("click", () => {
             player.muted = false;
         });
-    
+
         stopBtn.addEventListener("click", () => {
             player.muted = true;
         });
-    
-        socket.onerror = (error) => {
+
+        radioSocket.onerror = (error) => {
             console.error("WebSocket error:", error);
         };
-    
-        socket.onclose = () => {
+
+        radioSocket.onclose = () => {
             output.innerText = "disconnected.";
         };
+
+        // 💬 CHAT SOCKET
+        const chatSocket = new WebSocket("ws://localhost:8000/ws/chat/");
+        const chatBox = document.getElementById("chat-box");
+
+        chatSocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const line = `<p><strong>${data.username}:</strong> ${data.message}</p>`;
+            chatBox.innerHTML += line;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        function sendMessage() {
+            const username = document.getElementById("username").value.trim();
+            const message = document.getElementById("message").value.trim();
+            if (!username || !message) return;
+
+            chatSocket.send(JSON.stringify({
+                username: username,
+                message: message
+            }));
+
+            document.getElementById("message").value = "";
+        }
     </script>
-    
-    
 </body>
 </html>
