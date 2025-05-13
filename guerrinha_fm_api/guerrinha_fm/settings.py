@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
 ]
 
 
-ASGI_APPLICATION = 'guerrinha_fm_api.asgi.application'
+ASGI_APPLICATION = 'guerrinha_fm.asgi.application'
 
 
 CHANNEL_LAYERS = {

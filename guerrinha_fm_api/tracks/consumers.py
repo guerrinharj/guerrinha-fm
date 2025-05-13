@@ -21,5 +21,7 @@ class RadioConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard("radio", self.channel_name)
 
     async def radio_broadcast(self, event):
-        print(f"📥 Receiving broadcast: {event}")
+        data = json.loads(event["text"])
+        track_name = data.get("track", {}).get("name", "Unknown")
+        print(f"📥 Receiving broadcast: {track_name}")
         await self.send(text_data=event["text"])
