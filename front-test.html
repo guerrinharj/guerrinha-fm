@@ -4,13 +4,14 @@
     <title>guerrinha fm</title>
     <style>
         body {
-            background-color: black;
+            background: black;
             color: white;
-            font-family: sans-serif;
+            font-family: serif;
+            font-style: italic;
             text-align: center;
-            text-transform: lowercase;
+            text-transform: capitalize;
             margin: 0;
-            padding: 2em;
+            padding: 1em;
         }
 
         h1, h3, span, pre {
@@ -18,9 +19,8 @@
         }
 
         button {
-            background: white;
-            color: black;
-            border: none;
+            color: white;
+            border: solid 1px black;
             padding: 1em 2em;
             margin: 1em;
             cursor: pointer;
@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <h1>guerrinha fm</h1>
+    <h1>guerrinha</h1>
     <pre id="output">connecting...</pre>
 
     <h3>now playing:</h3>
@@ -53,34 +53,54 @@
         const playBtn = document.getElementById("play");
         const stopBtn = document.getElementById("stop");
 
-        let currentUrl = null;
+        let playlistQueue = [];
+        let isPlaying = false;
 
         socket.onopen = () => {
-            output.innerText = "connected!";
+            output.innerText = "";
         };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            const incomingUrl = data.track?.url;
-            const incomingName = data.track?.name;
+            const incomingTrack = data.track;
 
-            if (incomingName) {
-                trackName.innerText = incomingName;
-            }
-
-            if (incomingUrl && incomingUrl !== currentUrl) {
-                currentUrl = incomingUrl;
-                const liveUrl = currentUrl + "?t=" + Date.now(); // force reload
-
-                player.src = liveUrl;
-                player.load(); // reset the stream
-                player.muted = false;
-
-                player.play().catch((err) => {
-                    console.warn("autoplay failed:", err);
-                });
+            if (incomingTrack?.url) {
+                playlistQueue.push(incomingTrack);
+                if (!isPlaying) {
+                    playNextTrack();
+                }
             }
         };
+
+        function playNextTrack() {
+            if (playlistQueue.length === 0) {
+                isPlaying = false;
+                trackName.innerText = "waiting for data...";
+                return;
+            }
+
+            const nextTrack = playlistQueue.shift();
+            const liveUrl = nextTrack.url + "?t=" + Date.now();
+
+            trackName.innerText = nextTrack.name || "unknown track";
+
+            player.src = liveUrl;
+            player.load();
+            player.muted = false;
+
+            player.play().then(() => {
+                isPlaying = true;
+            }).catch((err) => {
+                console.warn("playback failed:", err);
+                isPlaying = false;
+            });
+        }
+
+        // when the current track ends, play the next one
+        player.addEventListener("ended", () => {
+            isPlaying = false;
+            playNextTrack();
+        });
 
         playBtn.addEventListener("click", () => {
             player.muted = false;
