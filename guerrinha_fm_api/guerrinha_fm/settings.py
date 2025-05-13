@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
 ]
 
 
-ASGI_APPLICATION = 'guerrinha_fm_api.asgi.application'
+ASGI_APPLICATION = 'guerrinha_fm.asgi.application'
 
 
 CHANNEL_LAYERS = {
@@ -140,10 +140,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
